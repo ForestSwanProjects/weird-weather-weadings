@@ -13,6 +13,9 @@ records_file = "records.txt"#put in .json
 f = open(records_file, "w")
 
 #webscraping bit
+#change to do the following urls:
+#https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=
+#https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=
 url = "https://coastalmonitoring.org/realtimedata/?chart=117&tab=met&range=month&disp_option=1&user_indate=01-07-2023&datum=chart"#put in .json
 page = req.get(url)
 soup = beausoup(page.content, "html.parser")
