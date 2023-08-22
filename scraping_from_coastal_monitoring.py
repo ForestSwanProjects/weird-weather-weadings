@@ -1,4 +1,5 @@
 #only needs to be run once as we are not looking at live data or data that will change
+#to do: 1) add bits to file_paths.json, 2) add func to create records.txt in directory from .json, 3) test the bitch
 
 import os
 import requests as req
