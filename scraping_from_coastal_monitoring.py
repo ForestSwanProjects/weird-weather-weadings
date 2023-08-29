@@ -19,23 +19,22 @@ records_file = paths_dict["records_file"]
 f = open(records_file, "w")
 
 #webscraping bit
-url_list = ["https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=","https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2="]
+url_list = ["https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=","https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2="]
 
 for url in url_list:
 
     page = req.get(url)
     soup = beausoup(page.content, "html.parser")
 
-    table_body_tag = soup.body.find("div", class="boxbody").find("div", class="table table-striped")
+    boxbody = soup.body.find("div", class_="boxbody")
+    table_body_tag = boxbody.find_all("table", class_="table table-striped")
+    records = table_body_tag[1].find_all("tr", class_=None)
 
-    records = table_body_tag.findall(not_charts_header)
-
-    record_string = ""
-
-    for i in range(0, len(records)-1):
-        curr_rec = records[i].findall("td")
-        for j in range(0, len(curr_rec)-1):
-            if j == 11:
+    for i in range(len(records)-1):
+        curr_rec = records[i].find_all('td')
+        record_string = ""
+        for j in range(len(curr_rec)-1):
+            if j == 10:
                 curr_data = curr_rec[j].get_text() + "\n"
             else:
                 curr_data = curr_rec[j].get_text() + ","
