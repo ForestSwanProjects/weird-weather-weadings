@@ -1,16 +1,17 @@
 #extract raw weather readings data
 
 import re
+import json
 
-#function to get next line boundaries
+#function to get next line boundaries - THIS DOES NOT WORK
 def get_next_line(curr_end, data):
 
     start = curr_end + 1
 
     date_pattern = re.compile("[0-3][0-9][/][0-1][0-9][/][2][0][2][3]")
 
-    end = data.find(date_pattern)
-
+    end = re.search(date_pattern, data).start()
+    print(end)
     return start, end
 
 #function to check line format
@@ -33,32 +34,39 @@ def find_next_bad_record(data, line):
         date = line[0:10]
         time = line[11:19]
 
-        line_start, line_end = get_next_line(line_end, data)
+        line_start, line_end = get_next_line(len(line)-1, data)
         line = data[line_start:line_end]
 
-    print("date + time of last valid line:",date,time)
+    #print("date + time of last valid line:",date,time)
 
     return line
 
 #function to find the next valid record
 def find_next_good_record(data, line):
 
+    date = line[0:10]
+    time = line[11:19]
+
     while not check_line_format(line):
 
         date = line[0:10]
         time = line[11:19]
 
-        line_start, line_end = get_next_line(line_end, data)
+        line_start, line_end = get_next_line(len(line)-1, data)
         line = data[line_start:line_end]
 
-    print("date + time of last invalid line:",date,time)
+    #print("date + time of last invalid line:",date,time)
 
     return line
 
+### START
 
-filename = "C:\\Users\\m.failey\\OneDrive - Fugro\My Notes\\exmouth strange readings\\Exmouth_Metdata_raw_2023_07\\Exmouth_Metdata_raw_2023_07.raw"
+with open("file_paths.json") as paths:
+    paths_dict = json.load(paths)
 
-with open(filename, "r", encoding='ANSI') as f:
+data_file = paths_dict["raw_data"]
+
+with open(data_file, "r", encoding='ANSI') as f:
     data = f.read()
 
 #for colum numbers from below line, -2
@@ -87,6 +95,19 @@ ref_V = data[line.find("Vr")+3:line.find(",",line.find("Vr"))-1]
 invalid_line = find_next_bad_record(data, line)
 
 next_valid_line = find_next_good_record(data, line)
+
+#for testing get_next_line
+line_start, line_end = get_next_line(len(line)-1, data)
+line = data[line_start:line_end]
+
+
+line_start, line_end = get_next_line(len(line)-1, data)
+line = data[line_start:line_end]
+
+
+line_start, line_end = get_next_line(len(line)-1, data)
+line = data[line_start:line_end]
+
 
 #if previous record to invalid_line is within half an hour(THIS CAN CHANGE),
 # get records from previous 2 hours every 5 minutes(THESE CAN ALSO CHANGE) up to last valid record,
