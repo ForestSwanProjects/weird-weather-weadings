@@ -4,15 +4,14 @@ import re
 import json
 
 #function to get next line boundaries - THIS DOES NOT WORK
-def get_next_line(curr_end, data):
+def get_next_line(line, data):
 
-    start = curr_end + 1
+    next_start = len(line)+1
+    next_end = data.find("\n", next_start)
 
-    date_pattern = re.compile("[0-3][0-9][/][0-1][0-9][/][2][0][2][3]")
+    new_line = data[next_start:next_end]
 
-    end = re.search(date_pattern, data).start()
-    print(end)
-    return start, end
+    return new_line
 
 #function to check line format
 def check_line_format(line_to_test):
@@ -31,31 +30,17 @@ def find_next_bad_record(data, line):
     #while line fits format, go to next line
     while check_line_format(line):
 
-        date = line[0:10]
-        time = line[11:19]
-
-        line_start, line_end = get_next_line(len(line)-1, data)
-        line = data[line_start:line_end]
-
-    #print("date + time of last valid line:",date,time)
+        line = get_next_line(line, data)
 
     return line
 
 #function to find the next valid record
 def find_next_good_record(data, line):
 
-    date = line[0:10]
-    time = line[11:19]
-
+    #while line does not fit format, go to next line
     while not check_line_format(line):
 
-        date = line[0:10]
-        time = line[11:19]
-
-        line_start, line_end = get_next_line(len(line)-1, data)
-        line = data[line_start:line_end]
-
-    #print("date + time of last invalid line:",date,time)
+        line = get_next_line(line, data)
 
     return line
 
@@ -81,6 +66,8 @@ line = data[line_start:line_end]
 date = line[0:10]
 time = line[11:19]
 
+print(len(data))
+
 #COULD CREATE A RECORD CLASS WITH BELOW AS ATTRIBUTES?
 #   https://docs.python.org/3/tutorial/classes.html
 #   https://www.w3schools.com/python/python_classes.asp
@@ -97,16 +84,8 @@ invalid_line = find_next_bad_record(data, line)
 next_valid_line = find_next_good_record(data, line)
 
 #for testing get_next_line
-line_start, line_end = get_next_line(len(line)-1, data)
-line = data[line_start:line_end]
+line = get_next_line(line, data)
 
-
-line_start, line_end = get_next_line(len(line)-1, data)
-line = data[line_start:line_end]
-
-
-line_start, line_end = get_next_line(len(line)-1, data)
-line = data[line_start:line_end]
 
 
 #if previous record to invalid_line is within half an hour(THIS CAN CHANGE),
