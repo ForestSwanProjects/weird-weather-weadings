@@ -1,9 +1,15 @@
-#extract raw weather readings data
+"""
+Extract raw weather readings data
+_________________________
+Notes:
+- Using record class isn't really necessary until we want to extract all info from each line and use multiple lines.
+
+"""
 
 import re
 import json
 
-#function to get next line boundaries - THIS DOES NOT WORK
+#function to get next line boundaries
 def get_next_line(line, data):
 
     next_start = len(line)+1
@@ -12,6 +18,7 @@ def get_next_line(line, data):
     new_line = data[next_start:next_end]
 
     return new_line
+
 
 #function to check line format
 def check_line_format(line_to_test):
@@ -24,25 +31,28 @@ def check_line_format(line_to_test):
     else:
         return False
     
+
 #function to find the next invalid record
-def find_next_bad_record(data, line):
+def find_next_bad_record(file, line):
     
     #while line fits format, go to next line
     while check_line_format(line):
 
-        line = get_next_line(line, data)
+        line = file.readline()
 
     return line
 
+
 #function to find the next valid record
-def find_next_good_record(data, line):
+def find_next_good_record(file, line):
 
     #while line does not fit format, go to next line
     while not check_line_format(line):
 
-        line = get_next_line(line, data)
+        line = file.readline()
 
     return line
+
 
 ### START
 
@@ -51,41 +61,34 @@ with open("file_paths.json") as paths:
 
 data_file = paths_dict["raw_data"]
 
-with open(data_file, "r", encoding='ANSI') as f:
-    data = f.read()
+f = open(data_file, "r", encoding='ANSI')
+line = f.readline()
 
 #for colum numbers from below line, -2
 #01/07/2023 00:00:03,0R0,Dn=095D,Dm=274D,Dx=352D,Sn=0.3M,Sm=5.8M,Sx=9.6M,Ta=17.9C,Ua=73.7P,Pa=1.0058B,Rc=13.02M,Rd=12480s,Ri=0.0M,Hc=0.0M,Hd=0s,Hi=0.0M,Th=18.0C,Vh=12.1N,Vs=12.1V,Vr=3.631V
 
-#first line boundaries
-line_start = 0
-line_end = 187
-
-#line without new line char. - COULD MAKE THIS AN INSTANCE OF RECORD CLASS
-line = data[line_start:line_end]
 date = line[0:10]
 time = line[11:19]
 
-print(len(data))
-
-#COULD CREATE A RECORD CLASS WITH BELOW AS ATTRIBUTES?
-#   https://docs.python.org/3/tutorial/classes.html
-#   https://www.w3schools.com/python/python_classes.asp
+"""
+COULD CREATE A RECORD CLASS WITH BELOW AS ATTRIBUTES? - see above notes
+   https://docs.python.org/3/tutorial/classes.html
+   https://www.w3schools.com/python/python_classes.asp
+"""
 #find e.g. "Rc" in string, get value between "=" and ","
-rain_accum = data[line.find("Rc")+3:line.find(",",line.find("Rc"))-1]
-rain_dur = data[line.find("Rd")+3:line.find(",",line.find("Rd"))-1]
-rain_inten = data[line.find("Ri")+3:line.find(",",line.find("Ri"))-1]
-air_temp = data[line.find("Ta")+3:line.find(",",line.find("Ta"))-1]
-supply_V = data[line.find("Vs")+3:line.find(",",line.find("Vs"))-1]
-ref_V = data[line.find("Vr")+3:line.find(",",line.find("Vr"))-1]
+rain_accum = line[line.find("Rc")+3:line.find(",",line.find("Rc"))-1]
+rain_dur = line[line.find("Rd")+3:line.find(",",line.find("Rd"))-1]
+rain_inten = line[line.find("Ri")+3:line.find(",",line.find("Ri"))-1]
+air_temp = line[line.find("Ta")+3:line.find(",",line.find("Ta"))-1]
+supply_V = line[line.find("Vs")+3:line.find(",",line.find("Vs"))-1]
+ref_V = line[line.find("Vr")+3:line.find(",",line.find("Vr"))-1]
 
-invalid_line = find_next_bad_record(data, line)
+invalid_line = find_next_bad_record(f, line)
 
-next_valid_line = find_next_good_record(data, line)
+next_valid_line = find_next_good_record(f, line)
 
-#for testing get_next_line
-line = get_next_line(line, data)
-
+print(invalid_line)
+print(next_valid_line)
 
 
 #if previous record to invalid_line is within half an hour(THIS CAN CHANGE),
