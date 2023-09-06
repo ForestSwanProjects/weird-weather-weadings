@@ -1,14 +1,16 @@
 """
-Extract raw weather readings data
+Find bad lines in raw data and save to file
 _________________________
 Notes:
 - Using record class isn't really necessary until we want to extract all info from each line and use multiple lines.
+- Purpose of script has changed to: Find invalid lines and their closest valid lines
 
 """
 
 import re
 import json
 import datetime as dt
+import pandas as pd
 
 #function to get next line boundaries
 def get_next_line(line, data):
@@ -25,9 +27,9 @@ def get_next_line(line, data):
 def check_line_format(line_to_test):
 
     #the start of none of the invalid records match this format
-    template = re.compile("^[0-3][0-9][/][0-1][0-9][/][2][0][2][3]\s[0-2][0-9][:][0-5][0-9][:][0-5][0-9][,][0][R][0][,][D][n]")
+    template = re.compile("^[0-3][0-9][/][0-1][0-9][/][2][0][2][3]\s[0-2][0-9][:][0-5][0-9][:][0-5][0-9][,][0][R][0][,][D][n][=][0-9][0-9][0-9][D][,][D][m][=][0-9][0-9][0-9][D][,][D][x]")
     
-    if template.match(line_to_test):
+    if template.match(line_to_test) and (184 < len(line_to_test) < 194):
         return True
     else:
         return False
@@ -87,58 +89,44 @@ supply_V = line[line.find("Vs")+3:line.find(",",line.find("Vs"))-1]
 ref_V = line[line.find("Vr")+3:line.find(",",line.find("Vr"))-1]
 """
 
-#list of dates/times of lines where problems start or are found
-problem_lines = []
+lines_list = []
 
-#while next line is not end of file
-while next_line != "":
-
-    #write new get next line funtion
-    #next_line = get_next_line()
+#while next line is not end of file - currently doesn't exit loop but gets last expected results so not horrendous
+while line != "":
 
     prev_line, invalid_line = find_next_bad_record(f, line)
 
-    invalid_line_dt = invalid_line[0:19]
-    invalid_line_dt = dt.datetime.strptime(invalid_line_dt, "%d/%m/%Y %H:%M:%S")
+    #invalid_line_dt = invalid_line[0:19]
+    #invalid_line_dt = dt.datetime.strptime(invalid_line_dt, "%d/%m/%Y %H:%M:%S")
 
-    prev_line_dt = prev_line[0:19]
-    prev_line_dt = dt.datetime.strptime(prev_line_dt, "%d/%m/%Y %H:%M:%S")
+    #prev_line_dt = prev_line[0:19]
+    #prev_line_dt = dt.datetime.strptime(prev_line_dt, "%d/%m/%Y %H:%M:%S")
 
     next_valid_line = find_next_good_record(f, invalid_line)
 
-    next_dt = next_valid_line[0:19]
-    next_dt = dt.datetime.strptime(next_dt, "%d/%m/%Y %H:%M:%S")
+    #next_dt = next_valid_line[0:19]
+    #next_dt = dt.datetime.strptime(next_dt, "%d/%m/%Y %H:%M:%S")
 
-    #if previous record to invalid_line is within half an hour(THIS CAN CHANGE),
-    # get records from previous 2 hours every 5 minutes(THESE CAN ALSO CHANGE) up to last valid record,
-    # use these records to chart rainfall
-    time_diff = invalid_line_dt - prev_line_dt
+    #print next invalid line
+    print("invalid: " + invalid_line)
+    print("previous valid: " + prev_line)
+    print("next valid: " + next_valid_line)
+    print("-"*50)
 
-    if (time_diff.seconds / 60) < 30:
+    lines_list.append((invalid_line.replace("\n",""),prev_line.replace("\n",""),next_valid_line.replace("\n","")))
 
-        record_found = False
+    line = next_valid_line
 
-        search_date = invalid_line_dt - dt.timedelta(hours=2)
-
-        print(str(search_date))
-
-        while record_found != True:
-
-            curr_line = f.readline()
-
-            #if date of line 2 hours prior, line found
-
-    else:
-        print(invalid_line_dt)
-        print(prev_line_dt)
-        print(time_diff)
+    #temporary measure
+    if next_valid_line[0:19] == "13/07/2023 14:38:38":
+        break
 
 
+print("saving ro csv... ")
 
-    #if following record to next_valid_line is within 5 mins,
-    # get records for next 2 hours every 5 mins,
-    # chart rainfall
-
-    #chart scraped data to compare and fill in the gaps
+#save list as csv file
+linesDF = pd.DataFrame(lines_list)
+linesDF = linesDF.set_axis(['invalid','prev','next'], axis=1)
+linesDF.to_csv("bad_lines.csv", index=False)
 
 f.close()
