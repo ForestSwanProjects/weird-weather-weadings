@@ -126,6 +126,8 @@ while next_line != "":
 
             curr_line = f.readline()
 
+            #if date of line 2 hours prior, line found
+
     else:
         print(invalid_line_dt)
         print(prev_line_dt)
