@@ -89,7 +89,7 @@ print("-"*50)
 wet_rows = []
 
 for m, row_m in full_df.iterrows():
-    if row_m["rainfall (mm)"] != "0.0":
+    if row_m["rainfall (mm)"] != 0.0:
         wet_rows.append((row_m["date/time"], row_m["rainfall (mm)"]))
 
 print(wet_rows)
