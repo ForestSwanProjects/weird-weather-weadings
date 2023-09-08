@@ -14,16 +14,29 @@ def not_charts_header(tag):
 with open("file_paths.json") as paths:
     paths_dict = json.load(paths)
 
-records_file = paths_dict["records_file"]
+
+#user chooses which records to get
+user_choice = input("[1] - get Exeter records\n[2] - get West Bay Harbour results\n-> ")
+
+if user_choice == "1":
+
+    records_file = paths_dict["ex_records_file"]
+
+    url_list = ["https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=","https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2="]
+
+elif user_choice == "2":
+
+    records_file = paths_dict["wb_records_file"]
+
+    url_list = ["https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=95&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=","https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=95&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2="]
+
 
 f = open(records_file, "w")
 
 #webscraping bit
-url_list = ["https://coastalmonitoring.org/realtimedata/?user_indate=08-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2=","https://coastalmonitoring.org/realtimedata/?user_indate=01-07-2023&chart=117&tab=met&disp_option=1&datum=chart&range=week&submit=Go&website2="]
-
 for url in url_list:
 
-    page = req.get(url)
+    page = req.get(url, verify=False)
     soup = beausoup(page.content, "html.parser")
 
     boxbody = soup.body.find("div", class_="boxbody")

@@ -1,5 +1,6 @@
 {
-    "records_file" : "C:\\Users\\m.failey\\OneDrive - Fugro\\GitHub\\weird-weather-weadings\\records_file.csv",
+    "ex_records_file" : "C:\\Users\\m.failey\\OneDrive - Fugro\\GitHub\\weird-weather-weadings\\exmouth_records_file.csv",
+    "wb_records_file" : "C:\\Users\\m.failey\\OneDrive - Fugro\\GitHub\\weird-weather-weadings\\wbmouth_records_file.csv",
     "raw_data" : "C:\\Users\\m.failey\\OneDrive - Fugro\\My Notes\\exmouth strange readings\\Exmouth_Metdata_raw_2023_07\\Exmouth_Metdata_raw_2023_07.csv",
     "bad_data" : "C:\\Users\\m.failey\\OneDrive - Fugro\\GitHub\\weird-weather-weadings\\bad_lines.csv"
 }

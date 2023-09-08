@@ -1,17 +1,23 @@
+"""
+Get a list of rainfall values from a nearby station around the times of each bad record.
+"""
+
 import pandas as pd
 import time
 import json
+import datetime as dt
 
 with open("file_paths.json") as paths:
     paths_dict = json.load(paths)
 
 #get file paths
 bad_lines_f = paths_dict["bad_data"]
-full_data_f = paths_dict["records_file"]
+full_data_f = paths_dict["wb_records_file"]
 
 bad_df = pd.read_csv(bad_lines_f)
 
 full_df = pd.read_csv(full_data_f)
+full_df = full_df.iloc[::-1]#reverse order of rows to have them ordered by date ascendings
 full_df = full_df.set_axis(['date/time','air press','wind spd (knts)','wind spd (m/s)','gust spd (knts)','gust speed (m/s)','wind dir','air temp','rainfall (mm)','rad','UV'], axis=1)
 full_df = full_df.drop(columns=['air press','wind spd (knts)','wind spd (m/s)','gust spd (knts)','gust speed (m/s)','wind dir','rad','UV'], axis=1)
 
@@ -27,16 +33,48 @@ for each invalid line:
     chart somehow
 
 """
+rainfalls = []
 
-for i, row in bad_df.iterrows():
-    #get record of bad line, its date, time and rain accumulation value
-    bad_rec = row["invalid"]
-    br_date = bad_rec[0:10]
-    br_time = bad_rec[11:19]
-    rain_accum = bad_rec[bad_rec.find("Rc")+3:bad_rec.find(",",bad_rec.find("Rc"))-1]
+for i, row_i in bad_df.iterrows():
 
+    #get record of bad line and its date and time
+    bad_rec = row_i["invalid"]
+    br_date_time = bad_rec[0:19]
+    
     #round minute to nearest ten minutes
-    br_time = br_time[:14] + str(round(int(br_time[14:16]), -1)) + br_time[17:]
+    mins = str(round(int(br_date_time[14:16]), -1))
+    hrs = br_date_time[11:13]
 
-    #look for matching date in full_df
+    if mins == "60":
+        mins = "00"
+        hrs = str(int(br_date_time[11:13]) + 1).zfill(2)
 
+    #drop seconds as they aren't included in other dataset
+    br_date_time = br_date_time[:11] + hrs + ":" + mins
+
+    #match to fit format of records_file.csv
+    br_date_time = br_date_time.replace("/","-")
+    br_dt = dt.datetime.strptime(br_date_time, "%d-%m-%Y %H:%M")
+
+    #get time of 2 hours before
+    minus_2_hr = br_dt - dt.timedelta(hours=2)
+
+    #get time of 1 hour after
+    plus_1_hour = br_dt + dt.timedelta(hours=1)
+
+    #init list of rainfall values
+    rainfall_vals = []
+
+    #get rainfall values between set times
+    for j, row_j in full_df.iterrows():
+
+        if minus_2_hr <= dt.datetime.strptime(row_j["date/time"], "%d-%m-%Y %H:%M") < plus_1_hour:
+
+            rainfall_vals.append(row_j["rainfall (mm)"])
+
+    rainfalls.append((br_date_time, rainfall_vals))
+
+    #rain_accum = bad_rec[bad_rec.find("Rc")+3:bad_rec.find(",",bad_rec.find("Rc"))-1]
+
+
+print(rainfalls)
