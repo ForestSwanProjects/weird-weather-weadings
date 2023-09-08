@@ -21,9 +21,6 @@ full_df = full_df.iloc[::-1]#reverse order of rows to have them ordered by date 
 full_df = full_df.set_axis(['date/time','air press','wind spd (knts)','wind spd (m/s)','gust spd (knts)','gust speed (m/s)','wind dir','air temp','rainfall (mm)','rad','UV'], axis=1)
 full_df = full_df.drop(columns=['air press','wind spd (knts)','wind spd (m/s)','gust spd (knts)','gust speed (m/s)','wind dir','rad','UV'], axis=1)
 
-print(bad_df.columns.values)
-print(full_df.columns.values)
-
 """
 for each invalid line:
     get rainfall every ten minutes over prev 2 hours
@@ -74,7 +71,25 @@ for i, row_i in bad_df.iterrows():
 
     rainfalls.append((br_date_time, rainfall_vals))
 
-    #rain_accum = bad_rec[bad_rec.find("Rc")+3:bad_rec.find(",",bad_rec.find("Rc"))-1]
 
+#get list of records that were corrupted when it rained around the time
+wet_list = []
 
-print(rainfalls)
+for j in rainfalls:
+    for k in j[1]:
+        if k != 0.0:
+            if j not in wet_list:
+                wet_list.append(j)
+
+print(wet_list)
+
+print("-"*50)
+
+#get list of every time where it rained
+wet_rows = []
+
+for m, row_m in full_df.iterrows():
+    if row_m["rainfall (mm)"] != "0.0":
+        wet_rows.append((row_m["date/time"], row_m["rainfall (mm)"]))
+
+print(wet_rows)
